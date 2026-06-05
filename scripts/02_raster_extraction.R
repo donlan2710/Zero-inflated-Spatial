@@ -31,3 +31,44 @@ writeRaster(nlcd_mo,
 # Reload from saved file to confirm it works correctly
 nlcd_mo <- rast("data/raw/nlcd_2021_missouri.tif")
 nlcd_mo
+
+# Quick plot to visually inspect land cover classes
+plot(nlcd_mo, main = "NLCD 2021 Land Cover - Missouri")
+
+png("outputs/map_02_nlcd_2021_missouri.png", 
+    width = 10, height = 8, units = "in", res = 300)
+plot(nlcd_mo, main = "NLCD 2021 Land Cover - Missouri")
+dev.off()
+
+library(exactextractr)
+library(dplyr)
+# Extract land cover proportions by county
+# exact_extract computes the fraction of each pixel covered by each polygon
+# This gives us the proportion of each land cover class per county
+lc_extract <- exact_extract(nlcd_mo, counties_mo_nlcd,
+                            "frac",
+                            append_cols = "GEOID")
+
+# Check result
+head(lc_extract)
+ncol(lc_extract)
+nrow(lc_extract)
+
+# Rename for clarity
+lc_extract <- lc_extract |>
+  rename(cropland = frac_82,
+         pasture = frac_81,
+         forest = frac_41,
+         developed_low = frac_21,
+         developed_high = frac_24,
+         water = frac_11,
+         wetland = frac_90)
+
+# Validate: all rows should sum to approximately 1
+lc_extract$total <- rowSums(lc_extract[, -1])
+summary(lc_extract$total)
+
+# Export to data/processed
+write.csv(lc_extract, 
+          "data/processed/nlcd_2021_county_extract.csv",
+          row.names = FALSE)
