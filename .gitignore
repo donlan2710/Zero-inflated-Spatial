@@ -39,8 +39,8 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-
-
+*.zip
+data/raw/
 
 # translation temp files
 po/*~
