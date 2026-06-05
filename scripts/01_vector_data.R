@@ -67,3 +67,21 @@ st_write(counties_mo_proj,
 counties_check <- st_read("data/processed/counties_mo.shp")
 print(counties_check)
 summary(counties_check$area_sqkm)
+
+# ── MAP: Missouri Counties ────────────────────────────────────────────────────
+
+library(ggplot2)
+
+ggplot(counties_mo_proj) +
+  geom_sf(aes(fill = area_sqkm), color = "white", linewidth = 0.3) +
+  scale_fill_viridis_c(name = "Area (sq km)", option = "plasma") +
+  labs(
+    title = "Missouri Counties by Area",
+    subtitle = "Source: US Census TIGER/Line 2025",
+    caption = "Projection: NAD83 / UTM Zone 15N"
+  ) +
+  theme_minimal()
+
+# Save the map
+ggsave("outputs/map_01_missouri_counties.png", 
+       width = 10, height = 7, dpi = 300)
