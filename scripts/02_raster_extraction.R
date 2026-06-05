@@ -72,3 +72,26 @@ summary(lc_extract$total)
 write.csv(lc_extract, 
           "data/processed/nlcd_2021_county_extract.csv",
           row.names = FALSE)
+
+# Join extraction results to county shapefile for mapping
+counties_map <- merge(counties_mo_nlcd, 
+                      lc_extract[, c("GEOID", "cropland")], 
+                      by = "GEOID")
+
+# Map cropland proportion by county
+library(ggplot2)
+
+ggplot(counties_map) +
+  geom_sf(aes(fill = cropland), color = "white", linewidth = 0.3) +
+  scale_fill_viridis_c(name = "Cropland\nProportion",
+                       option = "viridis",
+                       labels = scales::percent) +
+  labs(
+    title = "Cultivated Cropland Share by County",
+    subtitle = "Missouri, 2021 — NLCD Land Cover Class 82",
+    caption = "Source: NLCD 2021"
+  ) +
+  theme_minimal()
+
+ggsave("outputs/map_03_cropland_2021.png",
+       width = 10, height = 7, dpi = 300)
