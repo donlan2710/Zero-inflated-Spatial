@@ -1,0 +1,99 @@
+=== OLS BASELINE ===
+
+Call:
+lm(formula = transition ~ land_value_z + net_income_z + n_farms_z + 
+    cropland_z + acres_z, data = df)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-0.4478 -0.3075 -0.1737  0.4892  0.8389 
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   0.25439    0.03972   6.405 4.01e-09 ***
+land_value_z -0.10128    0.06062  -1.671   0.0977 .  
+net_income_z -0.05341    0.04912  -1.087   0.2793    
+n_farms_z     0.04190    0.06778   0.618   0.5377    
+cropland_z    0.14804    0.08146   1.817   0.0719 .  
+acres_z       0.05139    0.07335   0.701   0.4851    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.4241 on 108 degrees of freedom
+Multiple R-squared:  0.1018,	Adjusted R-squared:  0.06021 
+F-statistic: 2.448 on 5 and 108 DF,  p-value: 0.03833
+
+
+=== SPATIAL LAG MODEL ===
+
+Call:lagsarlm(formula = transition ~ land_value_z + net_income_z + 
+    n_farms_z + cropland_z + acres_z, data = df, listw = w_114)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.600496 -0.182553 -0.052887  0.170882  0.843129 
+
+Type: lag 
+Coefficients: (asymptotic standard errors) 
+              Estimate Std. Error z value Pr(>|z|)
+(Intercept)   0.080641   0.035995  2.2404  0.02507
+land_value_z -0.061520   0.045001 -1.3671  0.17160
+net_income_z -0.050110   0.036574 -1.3701  0.17066
+n_farms_z     0.036185   0.050225  0.7205  0.47125
+cropland_z    0.064799   0.060404  1.0728  0.28338
+acres_z       0.042003   0.054567  0.7698  0.44145
+
+Rho: 0.67338, LR test value: 48.513, p-value: 3.281e-12
+Asymptotic standard error: 0.079383
+    z-value: 8.4826, p-value: < 2.22e-16
+Wald statistic: 71.955, p-value: < 2.22e-16
+
+Log likelihood: -36.6234 for lag model
+ML residual variance (sigma squared): 0.098732, (sigma: 0.31422)
+Number of observations: 114 
+Number of parameters estimated: 8 
+AIC: 89.247, (AIC for lm: 135.76)
+LM test for residual autocorrelation
+test value: 0.23461, p-value: 0.62812
+
+
+=== SPATIAL ERROR MODEL ===
+
+Call:errorsarlm(formula = transition ~ land_value_z + net_income_z + 
+    n_farms_z + cropland_z + acres_z, data = df, listw = w_114)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.58570 -0.18366 -0.05828  0.16230  0.81692 
+
+Type: error 
+Coefficients: (asymptotic standard errors) 
+              Estimate Std. Error z value Pr(>|z|)
+(Intercept)   0.255502   0.097554  2.6191 0.008817
+land_value_z -0.066519   0.052404 -1.2694 0.204315
+net_income_z -0.090634   0.046272 -1.9587 0.050146
+n_farms_z     0.033101   0.055056  0.6012 0.547697
+cropland_z    0.065869   0.080334  0.8199 0.412247
+acres_z       0.058226   0.062238  0.9355 0.349508
+
+Lambda: 0.70129, LR test value: 49.615, p-value: 1.8705e-12
+Asymptotic standard error: 0.076646
+    z-value: 9.1498, p-value: < 2.22e-16
+Wald statistic: 83.72, p-value: < 2.22e-16
+
+Log likelihood: -36.07224 for error model
+ML residual variance (sigma squared): 0.096508, (sigma: 0.31066)
+Number of observations: 114 
+Number of parameters estimated: 8 
+AIC: 88.144, (AIC for lm: 135.76)
+
+
+=== MODEL COMPARISON ===
+AIC - OLS:           135.7598 
+AIC - Spatial lag:   89.24679 
+AIC - Spatial error: 88.14448 
+
+Moran's I on residuals:
+OLS:           0.471  p = 0 
+Spatial lag:   0.012  p = 0.362135 
+Spatial error: 0.004  p = 0.414575 
