@@ -15,66 +15,57 @@ library(ggplot2)
 counties_mo_proj <- st_read("data/processed/counties_mo.shp") |>
   arrange(GEOID)
 
-panel <- read.csv("data/processed/panel_final.csv")
-w_queen <- readRDS("data/processed/weights_queen.rds")
-nb_queen <- readRDS("data/processed/nb_queen.rds")
+panel        <- read.csv("data/processed/panel_final.csv")
+w_queen      <- readRDS("data/processed/weights_queen.rds")
+nb_queen     <- readRDS("data/processed/nb_queen.rds")
 
-# ── PREPARE CROSS-SECTION FOR SPATIAL ANALYSIS ───────────────────────────────
+# ── PREPARE CROSS-SECTIONS ────────────────────────────────────────────────────
 # Moran's I requires a single cross-section not a panel
-# Use 2021 as the baseline year for exploratory analysis
-# Repeat for 2011 as robustness check
+# 2021 is the baseline year for exploratory analysis
 
 panel_2021 <- panel |>
   filter(year == 2021) |>
   arrange(GEOID)
 
-# Confirm row count matches shapefile
-nrow(panel_2021)   # should be 115
+nrow(panel_2021)   # confirm 115 rows match shapefile
 
-# ── GLOBAL MORAN'S I - CROPLAND LEVEL ────────────────────────────────────────
-# Tests whether cropland proportion clusters spatially
+# ── GLOBAL MORAN'S I ──────────────────────────────────────────────────────────
+# Tests whether values cluster spatially
 # H0: no spatial autocorrelation
 # Positive I: similar values cluster together
-# Negative I: dissimilar values cluster together
 
+# Cropland level
 moran_cropland <- moran.test(panel_2021$cropland, w_queen)
 print(moran_cropland)
+# Result: Moran I = 0.783, p < 2.2e-16 — strong spatial clustering in cropland levels
 
-# ── GLOBAL MORAN'S I - CROPLAND CHANGE ───────────────────────────────────────
-# Tests whether cropland transitions cluster spatially
-# Use 2021 period (2011-2021 transitions)
-
-panel_2021_trans <- panel |>
-  filter(year == 2021) |>
-  arrange(GEOID)
-
-moran_change <- moran.test(panel_2021_trans$cropland_change, 
+# Cropland change
+moran_change <- moran.test(panel_2021$cropland_change,
                            w_queen,
                            na.action = na.omit)
 print(moran_change)
 
-# ── GLOBAL MORAN'S I - TRANSITION INDICATOR ──────────────────────────────────
-
-moran_transition <- moran.test(panel_2021_trans$transition,
+# Transition indicator
+moran_transition <- moran.test(panel_2021$transition,
                                w_queen,
                                na.action = na.omit)
 print(moran_transition)
+# Result: Moran I = 0.509, p < 2.2e-16 — significant spatial clustering in transitions
+# Both results justify spatial regression over standard OLS
 
-# ── LOCAL MORAN'S I (LISA) ────────────────────────────────────────────────────
+# ── LOCAL MORAN'S I (LISA) — CROPLAND LEVEL ───────────────────────────────────
 # Identifies specific cluster locations
-# High-High: high cropland counties surrounded by high cropland neighbors
-# Low-Low: low cropland counties surrounded by low cropland neighbors
-# High-Low: spatial outliers
+# High-High: high cropland surrounded by high cropland neighbors
+# Low-Low:   low cropland surrounded by low cropland neighbors
+# Spatial outliers: High-Low, Low-High
 
-lisa <- localmoran(panel_2021$cropland, w_queen)
+lisa_cropland <- localmoran(panel_2021$cropland, w_queen)
 
-# Add LISA results to county shapefile
 counties_lisa <- counties_mo_proj
-counties_lisa$lisa_i    <- lisa[, 1]   # local Moran statistic
-counties_lisa$lisa_p    <- lisa[, 5]   # p-value
-counties_lisa$cropland  <- panel_2021$cropland
+counties_lisa$lisa_i   <- lisa_cropland[, 1]
+counties_lisa$lisa_p   <- lisa_cropland[, 5]
+counties_lisa$cropland <- panel_2021$cropland
 
-# Classify clusters
 mean_crop <- mean(panel_2021$cropland)
 
 counties_lisa <- counties_lisa |>
@@ -89,10 +80,10 @@ counties_lisa <- counties_lisa |>
     )
   )
 
-# Count cluster types
+# Cluster counts
 table(counties_lisa$cluster)
-
-# ── MAP LISA CLUSTERS ─────────────────────────────────────────────────────────
+# High-High: 14, Low-Low: 23, Not significant: 78
+# Low-Low cluster = Ozark highlands = primary structural zero region
 
 ggplot(counties_lisa) +
   geom_sf(aes(fill = cluster), color = "white", linewidth = 0.3) +
@@ -116,15 +107,15 @@ ggplot(counties_lisa) +
 ggsave("outputs/map_06_lisa_clusters.png",
        width = 10, height = 7, dpi = 300)
 
-# ── LISA FOR TRANSITION INDICATOR ────────────────────────────────────────────
+# ── LOCAL MORAN'S I (LISA) — TRANSITION INDICATOR ────────────────────────────
 
-lisa_trans <- localmoran(panel_2021_trans$transition, w_queen)
+lisa_trans <- localmoran(panel_2021$transition, w_queen)
 
 counties_lisa$lisa_trans_i <- lisa_trans[, 1]
 counties_lisa$lisa_trans_p <- lisa_trans[, 5]
-counties_lisa$transition   <- panel_2021_trans$transition
+counties_lisa$transition   <- panel_2021$transition
 
-mean_trans <- mean(panel_2021_trans$transition, na.rm = TRUE)
+mean_trans <- mean(panel_2021$transition, na.rm = TRUE)
 
 counties_lisa <- counties_lisa |>
   mutate(
@@ -138,7 +129,11 @@ counties_lisa <- counties_lisa |>
     )
   )
 
+# Cluster counts
 table(counties_lisa$cluster_trans)
+# High-High: 15 (northern Missouri grain belt — transitions clustered)
+# Low-High: 4 (spatial outliers — non-transitioning within transitioning cluster)
+# Not significant: 96 (structural zero region — south and central Missouri)
 
 ggplot(counties_lisa) +
   geom_sf(aes(fill = cluster_trans), color = "white", linewidth = 0.3) +
@@ -161,3 +156,5 @@ ggplot(counties_lisa) +
 
 ggsave("outputs/map_07_lisa_transition_clusters.png",
        width = 10, height = 7, dpi = 300)
+
+message("Script 06 complete")
