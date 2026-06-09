@@ -73,10 +73,10 @@ summary(ols_z)
 # ── LAGRANGE MULTIPLIER TESTS ─────────────────────────────────────────────────
 # Selects between spatial lag and spatial error specification
 # Decision rule: if both LMlag and LMerr significant, use robust versions
-# adjRSlag p = 0.086, adjRSerr p = 0.995 → spatial lag preferred
+# adjRSlag p = 0.035, adjRSerr p = 0.575 → spatial lag preferred
 
-lm_tests <- lm.LMtests(ols_z, w_114,
-                       test = c("LMlag", "LMerr", "RLMlag", "RLMerr"))
+lm_tests <- lm.RStests(ols_z, w_114,
+                       test = c("RSlag", "RSerr", "adjRSlag", "adjRSerr"))
 print(lm_tests)
 
 # ── SPATIAL LAG MODEL ─────────────────────────────────────────────────────────
@@ -90,13 +90,13 @@ slag <- lagsarlm(transition ~ land_value_z + net_income_z +
                  listw = w_114)
 
 summary(slag)
-# Key result: Rho = 0.673, p < 2.2e-16 — strong spatial contagion
-# AIC = 89.25 vs OLS 135.76 — large improvement
+# Rho: 0.64487 (was 0.673 with 2022 data)
+# AIC = 77.24 vs OLS 121.69 — large improvement
 
 # ── SPATIAL ERROR MODEL ───────────────────────────────────────────────────────
 # Estimated for robustness comparison
 # Lambda captures spatially correlated unobservables
-# AIC = 88.14 — marginally better than spatial lag but difference < 2
+# AIC = 75.30 — marginally better than spatial lag, difference = 1.94
 # Both models tell the same substantive story
 
 serr <- errorsarlm(transition ~ land_value_z + net_income_z +
