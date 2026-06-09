@@ -2,10 +2,10 @@
 # Purpose: Download county-level agricultural economic data from USDA NASS
 #          Census of Agriculture via API
 # Census years: 2002, 2012, 2022
-# Aligned to NLCD years: 2001, 2011, 2021
-# Note: Census of Agriculture is conducted every 5 years. The years 2002,
-#       2012, and 2022 are the closest available census years to the NLCD
-#       land cover snapshots used in this study.
+# Alignment: Census year used as BEGINNING-OF-PERIOD economic conditions
+# Census 2002 → explains 2001-2011 transition (measured at period start)
+# Census 2012 → explains 2011-2021 transition (measured at period start)
+# Census 2022 → not used as predictor (end-of-period, reverse causality risk)
 # Data: USDA NASS Quick Stats API
 # Author: Lan T. Tran
 # Date: June 2026
@@ -130,9 +130,9 @@ econ_wide <- econ_wide |>
   mutate(
     GEOID = paste0(state_fips_code, str_pad(county_code, 3, pad = "0")),
     nlcd_year = case_when(
-      year == 2002 ~ 2001,
-      year == 2012 ~ 2011,
-      year == 2022 ~ 2021
+      year == 2002 ~ 2011,   # Census 2002 predicts 2001→2011 transition outcome
+      year == 2012 ~ 2021,   # Census 2012 predicts 2011→2021 transition outcome
+      year == 2022 ~ NA_real_ # not used as predictor — end of period, reverse causality risk
     )
   )
 
