@@ -37,6 +37,23 @@ Predicted probability by county type:
 2 Structural zero 23  0.419 0.225
 3      Transition 29  0.052 0.024
 
+         Actual
+Predicted  0  1
+        0 86 14
+        1  5  9
+Overall accuracy: 0.833 
+# A tibble: 2 × 4
+  structural_zero     n n_correct accuracy
+            <int> <int>     <int>    <dbl>
+1               0    91        86    0.945
+2               1    23         9    0.391
+
+Interpretation: Forest cover alone recovers 39% of LISA-classified
+structural zeros. Spatial neighborhood context in LISA carries
+information beyond what a single biophysical covariate can replicate.
+This justifies the rule-based LISA classification over a purely
+data-driven approach.
+
 === TABLE 3: PART 2 SPATIAL LAG — ACTIVE COUNTY TRANSITION PROCESS ===
 
 Outcome: transition (1 = abs(cropland change) > 0.02)
