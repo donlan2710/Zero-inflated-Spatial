@@ -1,0 +1,79 @@
+=== APPLICATION RESULTS: ZERO-INFLATED SPATIAL MODEL ===
+Date: June 2026
+Study area: Missouri counties, 2021 cross-section
+
+=== TABLE 1: THREE-MODEL COMPARISON ===
+
+Model                                    N      AIC    Log-Lik      Rho    Moran I
+-------------------------------------------------------------------------------- 
+OLS (baseline)                         114   135.76    -60.880      —      0.471
+Standard spatial lag                   114    89.25    -36.623    0.673      0.012
+ZI spatial lag — Part 2               91    91.18    -37.590    0.586      0.012
+-------------------------------------------------------------------------------- 
+Note: ZI spatial lag excludes 23 structural zero counties (Ozark Low-Low LISA cluster)
+      Ste. Genevieve County has no active neighbors — spatial lag set to zero
+      Moran's I p-values: OLS p=0.000, Spatial lag p=0.362, ZI Part 2 p=0.373
+
+=== TABLE 2: PART 1 PROBIT — STRUCTURAL ZERO PROCESS ===
+
+Outcome: structural_zero (1 = Low-Low LISA cluster, p < 0.05)
+N = 114 counties
+
+Variable               Estimate  Std.Error    z value   Pr(>|z|)
+-------------------------------------------------------------- 
+(Intercept)             -2.3402     0.3618    -6.4682     0.0000
+forest_total             3.6958     0.7363     5.0197     0.0000
+-------------------------------------------------------------- 
+Null deviance:     114.644 on 113 df
+Residual deviance: 83.504 on 112 df
+AIC: 87.504
+
+Marginal effect at mean forest_total:
+  dP(structural zero)/d(forest_total) = 0.8051
+
+Predicted probability by county type:
+      county_type  n mean_p  sd_p
+1   Sampling zero 62  0.187 0.198
+2 Structural zero 23  0.419 0.225
+3      Transition 29  0.052 0.024
+
+=== TABLE 3: PART 2 SPATIAL LAG — ACTIVE COUNTY TRANSITION PROCESS ===
+
+Outcome: transition (1 = abs(cropland change) > 0.02)
+N = 91 counties (23 structural zeros removed)
+Covariates standardized within active subsample
+
+Variable               Estimate  Std.Error    z value   Pr(>|z|)
+-------------------------------------------------------------- 
+(Intercept)              0.1253     0.0461     2.7176     0.0066
+land_value_z            -0.0707     0.0510    -1.3866     0.1656
+net_income_z            -0.0920     0.0451    -2.0420     0.0411
+n_farms_z                0.0616     0.0564     1.0924     0.2747
+cropland_z               0.0543     0.0670     0.8105     0.4176
+acres_z                  0.0627     0.0652     0.9625     0.3358
+-------------------------------------------------------------- 
+Rho:              0.5859 (p < 0.001)
+Log-likelihood:   -37.5899
+AIC:              91.18
+Moran's I resid:  0.0118 (p = 0.373)
+
+Rho comparison:
+  Standard spatial lag (n=114): 0.673
+  ZI Part 2 spatial lag (n=91): 0.586
+  Reduction in Rho:             0.087
+
+=== RESIDUAL BIAS BY COUNTY TYPE ===
+
+Standard spatial lag (n=114):
+      county_type  n mean_resid sd_resid
+1   Sampling zero 62    -0.1666   0.1912
+2 Structural zero 23    -0.1143   0.0797
+3      Transition 29     0.4468   0.1958
+
+ZI Part 2 spatial lag (n=91, active counties only):
+    county_type  n mean_resid sd_resid
+1 Sampling zero 62    -0.1989    0.203
+2    Transition 29     0.4252    0.172
+
+Note: Remaining bias in Part 2 reflects linear probability model applied
+to binary outcome — not spatial misspecification (Moran's I p = 0.373)
