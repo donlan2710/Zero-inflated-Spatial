@@ -1,0 +1,73 @@
+=== ZERO-INFLATED SPATIAL MODEL — OPTION A ===
+Date: June 2026
+
+=== PART 1: PROBIT — STRUCTURAL ZERO PROCESS ===
+Predictor: forest_total (frac_41 + frac_42 + frac_43)
+N = 114 counties
+
+
+Call:
+glm(formula = structural_zero ~ forest_total, family = binomial(link = "probit"), 
+    data = df)
+
+Coefficients:
+             Estimate Std. Error z value Pr(>|z|)    
+(Intercept)   -2.3402     0.3618  -6.468 9.92e-11 ***
+forest_total   3.6958     0.7363   5.020 5.18e-07 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 114.644  on 113  degrees of freedom
+Residual deviance:  83.504  on 112  degrees of freedom
+AIC: 87.504
+
+Number of Fisher Scoring iterations: 6
+
+
+=== PART 2: SPATIAL LAG — ACTIVE COUNTIES ===
+N = 91 counties (23 structural zeros removed)
+Island: Ste. Genevieve County — neighbors all structural zeros
+
+
+Call:lagsarlm(formula = part2_formula, data = df_active, listw = w_active, 
+    zero.policy = TRUE)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.620450 -0.241368 -0.064643  0.295451  0.781985 
+
+Type: lag 
+Regions with no neighbours included:
+ 77 
+Coefficients: (asymptotic standard errors) 
+              Estimate Std. Error z value Pr(>|z|)
+(Intercept)   0.125258   0.046091  2.7176 0.006575
+land_value_z -0.070735   0.051015 -1.3866 0.165578
+net_income_z -0.092006   0.045056 -2.0420 0.041149
+n_farms_z     0.061608   0.056399  1.0924 0.274678
+cropland_z    0.054343   0.067048  0.8105 0.417650
+acres_z       0.062713   0.065156  0.9625 0.335794
+
+Rho: 0.58588, LR test value: 29.476, p-value: 5.6601e-08
+Asymptotic standard error: 0.091145
+    z-value: 6.428, p-value: 1.2932e-10
+Wald statistic: 41.319, p-value: 1.2932e-10
+
+Log likelihood: -37.58994 for lag model
+ML residual variance (sigma squared): 0.12128, (sigma: 0.34826)
+Number of observations: 91 
+Number of parameters estimated: 8 
+AIC: 91.18, (AIC for lm: 118.66)
+LM test for residual autocorrelation
+test value: 0.14591, p-value: 0.70248
+
+
+=== RHO COMPARISON ===
+Standard spatial lag (n=114):  0.673 
+ZI Part 2 spatial lag (n=91):  0.586 
+Rho reduction:                 0.087 
+
+=== RESIDUAL DIAGNOSTICS ===
+Moran's I Part 2 residuals:    0.012  p = 0.373 
