@@ -6,9 +6,9 @@ Study area: Missouri counties, 2021 cross-section
 
 Model                                    N      AIC    Log-Lik      Rho    Moran I
 -------------------------------------------------------------------------------- 
-OLS (baseline)                         114   135.76    -60.880      —      0.471
-Standard spatial lag                   114    89.25    -36.623    0.673      0.012
-ZI spatial lag — Part 2               91    91.18    -37.590    0.586      0.012
+OLS (baseline)                         114   121.69    -53.846      —      0.456
+Standard spatial lag                   114    77.24    -30.619    0.645      0.024
+ZI spatial lag — Part 2               91    81.37    -32.687    0.551      0.028
 -------------------------------------------------------------------------------- 
 Note: ZI spatial lag excludes 23 structural zero counties (Ozark Low-Low LISA cluster)
       Ste. Genevieve County has no active neighbors — spatial lag set to zero
@@ -62,35 +62,35 @@ Covariates standardized within active subsample
 
 Variable               Estimate  Std.Error    z value   Pr(>|z|)
 -------------------------------------------------------------- 
-(Intercept)              0.1253     0.0461     2.7176     0.0066
-land_value_z            -0.0707     0.0510    -1.3866     0.1656
-net_income_z            -0.0920     0.0451    -2.0420     0.0411
-n_farms_z                0.0616     0.0564     1.0924     0.2747
-cropland_z               0.0543     0.0670     0.8105     0.4176
-acres_z                  0.0627     0.0652     0.9625     0.3358
+(Intercept)              0.1367     0.0454     3.0145     0.0026
+land_value_z            -0.2129     0.0568    -3.7483     0.0002
+net_income_z            -0.0926     0.0553    -1.6732     0.0943
+n_farms_z                0.1458     0.0611     2.3845     0.0171
+cropland_z               0.2542     0.0817     3.1125     0.0019
+acres_z                 -0.0613     0.0746    -0.8226     0.4108
 -------------------------------------------------------------- 
-Rho:              0.5859 (p < 0.001)
-Log-likelihood:   -37.5899
-AIC:              91.18
-Moran's I resid:  0.0118 (p = 0.373)
+Rho:              0.5511 (p < 0.001)
+Log-likelihood:   -32.6874
+AIC:              81.37
+Moran's I resid:  0.0277 (p = 0.293)
 
 Rho comparison:
-  Standard spatial lag (n=114): 0.673
-  ZI Part 2 spatial lag (n=91): 0.586
-  Reduction in Rho:             0.087
+  Standard spatial lag (n=114): 0.645
+  ZI Part 2 spatial lag (n=91): 0.551
+  Reduction in Rho:             0.094
 
 === RESIDUAL BIAS BY COUNTY TYPE ===
 
 Standard spatial lag (n=114):
       county_type  n mean_resid sd_resid
-1   Sampling zero 62    -0.1666   0.1912
-2 Structural zero 23    -0.1143   0.0797
-3      Transition 29     0.4468   0.1958
+1   Sampling zero 62    -0.1454   0.2217
+2 Structural zero 23    -0.1132   0.0927
+3      Transition 29     0.4006   0.1698
 
 ZI Part 2 spatial lag (n=91, active counties only):
     county_type  n mean_resid sd_resid
-1 Sampling zero 62    -0.1989    0.203
-2    Transition 29     0.4252    0.172
+1 Sampling zero 62    -0.1780   0.2344
+2    Transition 29     0.3806   0.1367
 
 Note: Remaining bias in Part 2 reflects linear probability model applied
 to binary outcome — not spatial misspecification (Moran's I p = 0.373)
