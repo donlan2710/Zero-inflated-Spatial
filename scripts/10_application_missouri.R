@@ -131,7 +131,9 @@ cat(sprintf("%-35s %6d %8.2f %10.3f %8.3f %10.3f\n",
 cat(strrep("-", 80), "\n")
 cat("Note: ZI spatial lag excludes 23 structural zero counties (Ozark Low-Low LISA cluster)\n")
 cat("      Ste. Genevieve County has no active neighbors — spatial lag set to zero\n")
-cat("      Moran's I p-values: OLS p=0.000, Spatial lag p=0.362, ZI Part 2 p=0.373\n\n")
+cat(sprintf("      Moran's I p-values: OLS p=0.000, Spatial lag p=%.3f, ZI Part 2 p=%.3f\n\n",
+            round(moran_slag_resid$p.value, 3),
+            round(moran_part2_resid$p.value, 3)))
 
 # ── TABLE 2: PART 1 PROBIT RESULTS ───────────────────────────────────────────
 
@@ -254,7 +256,8 @@ df_active |>
   as.data.frame() |>
   print()
 cat("\nNote: Remaining bias in Part 2 reflects linear probability model applied\n")
-cat("to binary outcome — not spatial misspecification (Moran's I p = 0.373)\n")
+cat(sprintf("to binary outcome — not spatial misspecification (Moran's I p = %.3f)\n",
+            round(moran_part2_resid$p.value, 3)))
 
 sink()
 

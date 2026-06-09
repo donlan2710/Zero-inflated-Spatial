@@ -12,7 +12,7 @@ ZI spatial lag — Part 2               91    81.37    -32.687    0.551      0.0
 -------------------------------------------------------------------------------- 
 Note: ZI spatial lag excludes 23 structural zero counties (Ozark Low-Low LISA cluster)
       Ste. Genevieve County has no active neighbors — spatial lag set to zero
-      Moran's I p-values: OLS p=0.000, Spatial lag p=0.362, ZI Part 2 p=0.373
+      Moran's I p-values: OLS p=0.000, Spatial lag p=0.285, ZI Part 2 p=0.293
 
 === TABLE 2: PART 1 PROBIT — STRUCTURAL ZERO PROCESS ===
 
@@ -93,4 +93,4 @@ ZI Part 2 spatial lag (n=91, active counties only):
 2    Transition 29     0.3806   0.1367
 
 Note: Remaining bias in Part 2 reflects linear probability model applied
-to binary outcome — not spatial misspecification (Moran's I p = 0.373)
+to binary outcome — not spatial misspecification (Moran's I p = 0.293)
