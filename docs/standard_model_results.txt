@@ -1,99 +1,104 @@
 === OLS BASELINE ===
+Covariates: 2012 Census economic data + 2011 NLCD pasture (beginning-of-period)
+
 
 Call:
 lm(formula = transition ~ land_value_z + net_income_z + n_farms_z + 
-    cropland_z + acres_z, data = df)
+    cropland_z + acres_z + pasture_z, data = df)
 
 Residuals:
     Min      1Q  Median      3Q     Max 
--0.5217 -0.2986 -0.1424  0.4017  0.7913 
+-0.7597 -0.2240 -0.0351  0.1855  0.6397 
 
 Coefficients:
              Estimate Std. Error t value Pr(>|t|)    
-(Intercept)   0.25439    0.03734   6.813 5.66e-10 ***
-land_value_z -0.25510    0.06461  -3.948 0.000141 ***
-net_income_z -0.11206    0.06283  -1.783 0.077322 .  
-n_farms_z     0.15166    0.07103   2.135 0.035012 *  
-cropland_z    0.39349    0.09586   4.105 7.89e-05 ***
-acres_z      -0.06811    0.08216  -0.829 0.408967    
+(Intercept)   0.25439    0.02934   8.671 5.09e-14 ***
+land_value_z -0.11623    0.05348  -2.173    0.032 *  
+net_income_z -0.06448    0.04970  -1.297    0.197    
+n_farms_z    -0.07598    0.06226  -1.220    0.225    
+cropland_z    0.34546    0.07554   4.573 1.30e-05 ***
+acres_z      -0.06763    0.06455  -1.048    0.297    
+pasture_z     0.35452    0.04300   8.245 4.55e-13 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 0.3987 on 108 degrees of freedom
-Multiple R-squared:  0.2061,	Adjusted R-squared:  0.1693 
-F-statistic: 5.606 on 5 and 108 DF,  p-value: 0.0001241
+Residual standard error: 0.3132 on 107 degrees of freedom
+Multiple R-squared:  0.5145,	Adjusted R-squared:  0.4873 
+F-statistic:  18.9 on 6 and 107 DF,  p-value: 6.735e-15
 
 
 === SPATIAL LAG MODEL ===
 
 Call:lagsarlm(formula = transition ~ land_value_z + net_income_z + 
-    n_farms_z + cropland_z + acres_z, data = df, listw = w_114)
+    n_farms_z + cropland_z + acres_z + pasture_z, data = df,     listw = w_114)
 
 Residuals:
       Min        1Q    Median        3Q       Max 
--0.668424 -0.156768 -0.054923  0.212703  0.784303 
+-0.614603 -0.163868 -0.019782  0.131884  0.676518 
 
 Type: lag 
 Coefficients: (asymptotic standard errors) 
               Estimate Std. Error z value  Pr(>|z|)
-(Intercept)   0.087997   0.034988  2.5150 0.0119025
-land_value_z -0.188962   0.049951 -3.7830 0.0001550
-net_income_z -0.068624   0.047301 -1.4508 0.1468335
-n_farms_z     0.126154   0.053625  2.3525 0.0186459
-cropland_z    0.249468   0.073051  3.4150 0.0006379
-acres_z      -0.062496   0.061809 -1.0111 0.3119619
+(Intercept)   0.157392   0.036806  4.2762 1.901e-05
+land_value_z -0.124995   0.048815 -2.5606   0.01045
+net_income_z -0.055375   0.045133 -1.2269   0.21986
+n_farms_z    -0.013283   0.056997 -0.2331   0.81572
+cropland_z    0.277874   0.071338  3.8952 9.813e-05
+acres_z      -0.064520   0.058690 -1.0993   0.27162
+pasture_z     0.233720   0.048686  4.8005 1.582e-06
 
-Rho: 0.64487, LR test value: 46.454, p-value: 9.3802e-12
-Asymptotic standard error: 0.079695
-    z-value: 8.0917, p-value: 6.6613e-16
-Wald statistic: 65.475, p-value: 5.5511e-16
+Rho: 0.37592, LR test value: 11.183, p-value: 0.00082554
+Asymptotic standard error: 0.10087
+    z-value: 3.7267, p-value: 0.00019401
+Wald statistic: 13.888, p-value: 0.00019401
 
-Log likelihood: -30.61924 for lag model
-ML residual variance (sigma squared): 0.089958, (sigma: 0.29993)
+Log likelihood: -20.2205 for lag model
+ML residual variance (sigma squared): 0.080889, (sigma: 0.28441)
 Number of observations: 114 
-Number of parameters estimated: 8 
-AIC: 77.238, (AIC for lm: 121.69)
+Number of parameters estimated: 9 
+AIC: 58.441, (AIC for lm: 67.624)
 LM test for residual autocorrelation
-test value: 0.72034, p-value: 0.39603
+test value: 1.3585, p-value: 0.24379
 
 
 === SPATIAL ERROR MODEL ===
 
 Call:errorsarlm(formula = transition ~ land_value_z + net_income_z + 
-    n_farms_z + cropland_z + acres_z, data = df, listw = w_114)
+    n_farms_z + cropland_z + acres_z + pasture_z, data = df,     listw = w_114)
 
 Residuals:
-      Min        1Q    Median        3Q       Max 
--0.631111 -0.185044 -0.059658  0.210586  0.722349 
+     Min       1Q   Median       3Q      Max 
+-0.60249 -0.17946 -0.01491  0.13455  0.61959 
 
 Type: error 
 Coefficients: (asymptotic standard errors) 
-              Estimate Std. Error z value  Pr(>|z|)
-(Intercept)   0.255611   0.092569  2.7613  0.005757
-land_value_z -0.250350   0.062903 -3.9799 6.894e-05
-net_income_z -0.051458   0.059687 -0.8621  0.388621
-n_farms_z     0.128742   0.059663  2.1578  0.030940
-cropland_z    0.257295   0.088555  2.9055  0.003667
-acres_z      -0.055576   0.070394 -0.7895  0.429821
+               Estimate Std. Error z value  Pr(>|z|)
+(Intercept)   0.2513681  0.0505337  4.9743 6.550e-07
+land_value_z -0.1683810  0.0567796 -2.9655  0.003022
+net_income_z -0.0387807  0.0538307 -0.7204  0.471267
+n_farms_z     0.0028797  0.0603273  0.0477  0.961927
+cropland_z    0.3378924  0.0771707  4.3785 1.195e-05
+acres_z      -0.0766995  0.0650849 -1.1785  0.238616
+pasture_z     0.2916494  0.0532180  5.4803 4.247e-08
 
-Lambda: 0.70244, LR test value: 48.39, p-value: 3.4936e-12
-Asymptotic standard error: 0.076458
-    z-value: 9.1872, p-value: < 2.22e-16
-Wald statistic: 84.405, p-value: < 2.22e-16
+Lambda: 0.47988, LR test value: 11.877, p-value: 0.00056839
+Asymptotic standard error: 0.10739
+    z-value: 4.4684, p-value: 7.8802e-06
+Wald statistic: 19.967, p-value: 7.8802e-06
 
-Log likelihood: -29.65123 for error model
-ML residual variance (sigma squared): 0.086178, (sigma: 0.29356)
+Log likelihood: -19.87359 for error model
+ML residual variance (sigma squared): 0.078617, (sigma: 0.28039)
 Number of observations: 114 
-Number of parameters estimated: 8 
-AIC: 75.302, (AIC for lm: 121.69)
+Number of parameters estimated: 9 
+AIC: 57.747, (AIC for lm: 67.624)
 
 
 === MODEL COMPARISON ===
-AIC - OLS:           121.6923 
-AIC - Spatial lag:   77.23847 
-AIC - Spatial error: 75.30246 
+AIC - OLS:           67.62392 
+AIC - Spatial lag:   58.44101 
+AIC - Spatial error: 57.74718 
 
 Moran's I on residuals:
-OLS:           0.456  p = 0 
-Spatial lag:   0.024  p = 0.285468 
-Spatial error: 0  p = 0.438808 
+OLS:           0.191  p = 0.000349 
+Spatial lag:   0.038  p = 0.211649 
+Spatial error: 0.008  p = 0.387934 

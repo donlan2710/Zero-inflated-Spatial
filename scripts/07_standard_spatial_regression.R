@@ -2,6 +2,9 @@
 # Purpose: Estimate OLS and spatial regression models as baseline
 #          Select between spatial lag and spatial error via LM tests
 #          Establish benchmark for comparison with zero-inflated spatial model
+# Covariates: 2012 Census of Agriculture (beginning-of-period)
+#             pasture_bop: 2011 NLCD pasture share (beginning-of-period)
+#             Consistent beginning-of-period framework throughout
 # Author: Lan T. Tran
 # Date: June 2026
 
@@ -21,7 +24,8 @@ w_queen <- readRDS("data/processed/weights_queen.rds")
 # ── PREPARE ANALYTICAL SAMPLE ─────────────────────────────────────────────────
 # Cross-section: 2021 (most recent NLCD year)
 # Exclude St. Louis City — missing economic covariates
-# Exclude 2001 — no transition variable (first period has no lag)
+# year==2021 rows carry 2012 Census economic data (beginning-of-period)
+# following Script 03 nlcd_year remapping
 
 df <- panel |>
   filter(year == 2021) |>
@@ -31,10 +35,31 @@ df <- panel |>
 # Confirm: 114 rows (115 counties minus St. Louis City)
 nrow(df)
 
+# ── MERGE BEGINNING-OF-PERIOD PASTURE ─────────────────────────────────────────
+# pasture_bop: 2011 NLCD pasture share — beginning of 2011-2021 transition period
+# Consistent with 2012 Census economic covariates
+# Transitioning counties had nearly twice the pasture share in 2011 (0.459 vs 0.250)
+# Lark et al. (2015): grasslands constituted 77% of new cropland nationally 2008-2012
+# Lark et al. (2020): Missouri identified as cropland expansion hotspot
+# Lubowski, Plantinga, and Stavins (2008): pasture-to-cropland as competing returns decision
+
+pasture_2011 <- panel |>
+  filter(year == 2011, !is.na(n_farms)) |>
+  select(GEOID, pasture) |>
+  rename(pasture_bop = pasture) |>
+  mutate(GEOID = as.character(GEOID))
+
+df <- df |>
+  mutate(GEOID = as.character(GEOID)) |>
+  left_join(pasture_2011, by = "GEOID")
+
+# Confirm no missing values after merge
+sum(is.na(df$pasture_bop))
+
 # Confirm no missing values in analytical variables
 df |>
   select(transition, land_value_acre, net_income,
-         n_farms, cropland, acres_operated) |>
+         n_farms, cropland, acres_operated, pasture_bop) |>
   summarise(across(everything(), ~sum(is.na(.))))
 
 # ── STANDARDIZE COVARIATES ────────────────────────────────────────────────────
@@ -42,14 +67,16 @@ df |>
 # Variables on very different scales (net_income in millions, transition 0/1)
 # Standardization does not affect Rho, AIC, or residual diagnostics
 # Coefficients interpreted as effect of one SD increase in each covariate
+# pasture_z: standardized 2011 pasture share (beginning-of-period)
 
 df <- df |>
   mutate(
-    land_value_z = scale(land_value_acre),
-    net_income_z = scale(net_income),
-    n_farms_z    = scale(n_farms),
-    cropland_z   = scale(cropland),
-    acres_z      = scale(acres_operated)
+    land_value_z = as.numeric(scale(land_value_acre)),
+    net_income_z = as.numeric(scale(net_income)),
+    n_farms_z    = as.numeric(scale(n_farms)),
+    cropland_z   = as.numeric(scale(cropland)),
+    acres_z      = as.numeric(scale(acres_operated)),
+    pasture_z    = as.numeric(scale(pasture_bop))
   )
 
 # ── SUBSET WEIGHTS TO MATCH ANALYTICAL SAMPLE ─────────────────────────────────
@@ -61,47 +88,45 @@ w_114 <- subset(w_queen,
 
 # ── OLS BASELINE ──────────────────────────────────────────────────────────────
 # Linear probability model — ignores spatial dependence
-# Benchmark only: OLS residuals show Moran's I = 0.471 (p < 0.001)
-# confirming severe spatial autocorrelation
+# Benchmark only: OLS residuals confirm severe spatial autocorrelation
+# Covariate set includes pasture_z for consistency with ZI Part 2 specification
 
 ols_z <- lm(transition ~ land_value_z + net_income_z +
-              n_farms_z + cropland_z + acres_z,
+              n_farms_z + cropland_z + acres_z + pasture_z,
             data = df)
 
 summary(ols_z)
 
 # ── LAGRANGE MULTIPLIER TESTS ─────────────────────────────────────────────────
 # Selects between spatial lag and spatial error specification
-# Decision rule: if both LMlag and LMerr significant, use robust versions
-# adjRSlag p = 0.035, adjRSerr p = 0.575 → spatial lag preferred
+# Decision rule: if both RSlag and RSerr significant, use robust versions
+# adjRSlag significant, adjRSerr not → spatial lag preferred
 
 lm_tests <- lm.RStests(ols_z, w_114,
                        test = c("RSlag", "RSerr", "adjRSlag", "adjRSerr"))
 print(lm_tests)
 
 # ── SPATIAL LAG MODEL ─────────────────────────────────────────────────────────
-# Primary model: spatial lag selected by robust LM tests
-# Rho captures spatial contagion — transition probability influenced
-# by whether neighboring counties transitioned
+# Primary baseline model: spatial lag selected by robust LM tests
+# Rho captures apparent spatial contagion in full 114-county sample
+# Includes structural zeros — benchmark for Rho reduction in ZI model
+# Note: Rho here reflects both genuine contagion AND spatial clustering
+# of structural zeros and pasture availability — will be decomposed in Script 09
 
 slag <- lagsarlm(transition ~ land_value_z + net_income_z +
-                   n_farms_z + cropland_z + acres_z,
-                 data = df,
+                   n_farms_z + cropland_z + acres_z + pasture_z,
+                 data  = df,
                  listw = w_114)
 
 summary(slag)
-# Rho: 0.64487 (was 0.673 with 2022 data)
-# AIC = 77.24 vs OLS 121.69 — large improvement
 
 # ── SPATIAL ERROR MODEL ───────────────────────────────────────────────────────
 # Estimated for robustness comparison
 # Lambda captures spatially correlated unobservables
-# AIC = 75.30 — marginally better than spatial lag, difference = 1.94
-# Both models tell the same substantive story
 
 serr <- errorsarlm(transition ~ land_value_z + net_income_z +
-                     n_farms_z + cropland_z + acres_z,
-                   data = df,
+                     n_farms_z + cropland_z + acres_z + pasture_z,
+                   data  = df,
                    listw = w_114)
 
 summary(serr)
@@ -114,10 +139,6 @@ cat("Spatial lag:  ", AIC(slag), "\n")
 cat("Spatial error:", AIC(serr), "\n")
 
 # ── RESIDUAL DIAGNOSTICS ──────────────────────────────────────────────────────
-# Spatial models should remove autocorrelation from residuals
-# OLS Moran's I = 0.471 (p = 0) — severe autocorrelation
-# Spatial lag Moran's I = 0.012 (p = 0.362) — fully resolved
-# Spatial error Moran's I = 0.004 (p = 0.415) — fully resolved
 
 moran_ols_resid  <- moran.test(residuals(ols_z), w_114)
 moran_slag_resid <- moran.test(residuals(slag),  w_114)
@@ -139,6 +160,7 @@ saveRDS(serr,  "data/processed/model_serr.rds")
 
 sink("docs/standard_model_results.txt")
 cat("=== OLS BASELINE ===\n")
+cat("Covariates: 2012 Census economic data + 2011 NLCD pasture (beginning-of-period)\n\n")
 print(summary(ols_z))
 cat("\n=== SPATIAL LAG MODEL ===\n")
 print(summary(slag))
@@ -157,4 +179,4 @@ cat("Spatial error:", round(moran_serr_resid$estimate[1], 3),
     " p =", round(moran_serr_resid$p.value, 6), "\n")
 sink()
 
-message("Script 07 complete - standard spatial models estimated and saved")
+message("Script 07 complete - standard spatial models with pasture_bop estimated and saved")
