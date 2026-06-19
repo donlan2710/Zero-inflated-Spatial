@@ -103,6 +103,27 @@ write.csv(lc_panel,
 
 message("Panel dataset saved: 115 counties x 3 years")
 
+# ── ADD: PASTURE BY YEAR (WIDE FORMAT) FOR DOWNSTREAM MERGE ──────────────────
+# Script 04 needs pasture_2011 alongside the 2021 cross-section row.
+# Save a wide lookup table so later scripts merge cleanly instead of
+# re-filtering lc_panel by year each time.
+
+pasture_wide <- lc_panel |>
+  select(GEOID, year, pasture) |>
+  tidyr::pivot_wider(names_from = year, 
+                     values_from = pasture,
+                     names_prefix = "pasture_")
+
+# Confirm structure: GEOID, pasture_2001, pasture_2011, pasture_2021
+names(pasture_wide)
+nrow(pasture_wide)   # should be 115
+
+write.csv(pasture_wide,
+          "data/processed/pasture_by_year.csv",
+          row.names = FALSE)
+
+message("Pasture by year saved: ", nrow(pasture_wide), " counties")
+
 # ── MAP: CROPLAND 2021 ────────────────────────────────────────────────────────
 
 nlcd_mo_2021 <- rast("data/raw/nlcd_2021_missouri.tif")
