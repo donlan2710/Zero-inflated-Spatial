@@ -1,5 +1,6 @@
 # Script 04: Panel Dataset Construction
-# Purpose: Merge NLCD land cover panel with USDA NASS economic panel
+# Purpose: Merge NLCD land cover panel with USDA NASS economic panel,
+#          pasture_2011 (beginning-of-period land cover), and CRP enrollment
 #          Define cropland transition outcome variable
 #          Validate and export final analysis-ready panel
 # Author: Lan T. Tran
@@ -12,11 +13,19 @@ library(ggplot2)
 
 # ── LOAD DATA ─────────────────────────────────────────────────────────────────
 
-lc_panel <- read.csv("data/processed/nlcd_panel_2001_2011_2021.csv")
-econ_panel <- read.csv("data/processed/econ_panel_mo.csv")
+lc_panel    <- read.csv("data/processed/nlcd_panel_2001_2011_2021.csv")
+econ_panel  <- read.csv("data/processed/econ_panel_mo.csv")
+pasture_wide <- read.csv("data/processed/pasture_by_year.csv")
+crp_2011    <- read.csv("data/processed/crp_2011_missouri.csv")
 
-# lc_panel:   345 rows (115 counties x 3 years) — NLCD land cover
-# econ_panel: 342 rows (114 counties x 3 years) — USDA NASS economic data
+# lc_panel:    345 rows (115 counties x 3 years) — NLCD land cover
+# econ_panel:  342 rows (114 counties x 3 years) — USDA NASS economic data
+#              Census year aligned to BEGINNING of transition period:
+#              Census 2002 -> nlcd_year 2011 (predicts 2001-2011 transition)
+#              Census 2012 -> nlcd_year 2021 (predicts 2011-2021 transition)
+#              Census 2022 -> not used (end-of-period, reverse causality risk)
+# pasture_wide: 115 rows — pasture_2001, pasture_2011, pasture_2021 (wide)
+# crp_2011:    115 rows — crp_acres_2011, crp_share_2011
 # St. Louis City present in lc_panel but absent in econ_panel (no farms)
 
 # ── MERGE PANELS ──────────────────────────────────────────────────────────────
@@ -33,6 +42,24 @@ sum(is.na(panel$n_farms))
 # Remove duplicate year column and validation total from lc_panel
 panel <- panel |>
   select(-year.y, -total)
+
+# ── MERGE PASTURE_2011 (BEGINNING-OF-PERIOD LAND COVER) ──────────────────────
+# pasture_2011 is the same value regardless of which NLCD year row it joins to
+# (it is a single point-in-time measure used as a predictor for the
+# 2011-2021 transition outcome)
+
+panel <- panel |>
+  left_join(pasture_wide |> select(GEOID, pasture_2011), by = "GEOID")
+
+sum(is.na(panel$pasture_2011))   # should be 0 — all 115 counties have this
+
+# ── MERGE CRP ENROLLMENT (2011) ───────────────────────────────────────────────
+
+panel <- panel |>
+  left_join(crp_2011 |> select(GEOID, crp_acres_2011, crp_share_2011), 
+            by = "GEOID")
+
+sum(is.na(panel$crp_share_2011))   # should be 0 — all 115 counties have this
 
 # ── DEFINE CROPLAND TRANSITION OUTCOME ───────────────────────────────────────
 # Calculate cropland change between consecutive NLCD periods
@@ -94,6 +121,12 @@ panel |>
 # Zero rate justification for zero-inflated model:
 # 2001-2011: 81.7% zeros — exceeds 70% threshold for ZI modeling
 # 2011-2021: 74.8% zeros — exceeds 70% threshold for ZI modeling
+
+# Confirm pasture_2011 and crp_share_2011 carried through correctly
+panel |>
+  filter(year == 2021) |>
+  select(GEOID, pasture_2011, crp_share_2011) |>
+  summary()
 
 # ── EXPORT ────────────────────────────────────────────────────────────────────
 
