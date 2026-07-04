@@ -184,7 +184,7 @@ cat("Spatial error AIC: ", round(AIC(model_serr), 2), "\n")
 
 cat("\n=== RESIDUAL DIAGNOSTICS ===\n")
 cat("OLS Moran's I:           ", round(moran_ols_resid$estimate[1], 3),
-    " p =", round(moran_ols_resid$p.value, 4), "\n")
+    " p =", format(unname(moran_ols_resid$p.value), scientific = TRUE), "\n")
 cat("Spatial lag Moran's I:   ", round(moran_slag_resid$estimate[1], 3),
     " p =", round(moran_slag_resid$p.value, 4), "\n")
 cat("Spatial error Moran's I: ", round(moran_serr_resid$estimate[1], 3),
