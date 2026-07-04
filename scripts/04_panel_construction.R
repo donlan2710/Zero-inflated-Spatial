@@ -1,69 +1,69 @@
 # Script 04: Panel Dataset Construction
-# Purpose: Merge NLCD land cover panel with USDA NASS economic panel,
-#          pasture_2011 (beginning-of-period land cover), and CRP enrollment
+# Purpose: Merge NLCD land cover panel with USDA NASS economic panel
 #          Define cropland transition outcome variable
 #          Validate and export final analysis-ready panel
+#
+# Scope: This script does one job. Land cover plus economic data in,
+#        clean panel with a transition outcome out. Pasture and CRP
+#        are not part of this script. See Variable_Selection_Note.md
+#        for why those were suspended.
+#
 # Author: Lan T. Tran
 # Date: June 2026
 
 library(dplyr)
 library(tidyr)
 library(stringr)
-library(ggplot2)
 
 # ── LOAD DATA ─────────────────────────────────────────────────────────────────
 
-lc_panel    <- read.csv("data/processed/nlcd_panel_2001_2011_2021.csv")
-econ_panel  <- read.csv("data/processed/econ_panel_mo.csv")
-pasture_wide <- read.csv("data/processed/pasture_by_year.csv")
-crp_2011    <- read.csv("data/processed/crp_2011_missouri.csv")
+lc_panel   <- read.csv("data/processed/nlcd_panel_2001_2011_2021.csv")
+econ_panel <- read.csv("data/processed/econ_panel_mo.csv")
 
-# lc_panel:    345 rows (115 counties x 3 years) — NLCD land cover
-# econ_panel:  342 rows (114 counties x 3 years) — USDA NASS economic data
-#              Census year aligned to BEGINNING of transition period:
-#              Census 2002 -> nlcd_year 2011 (predicts 2001-2011 transition)
-#              Census 2012 -> nlcd_year 2021 (predicts 2011-2021 transition)
-#              Census 2022 -> not used (end-of-period, reverse causality risk)
-# pasture_wide: 115 rows — pasture_2001, pasture_2011, pasture_2021 (wide)
-# crp_2011:    115 rows — crp_acres_2011, crp_share_2011
-# St. Louis City present in lc_panel but absent in econ_panel (no farms)
+# Row counts confirmed on the June 2026 data pull: 345 and 342.
+# Read the values below yourself, do not assume they match this note
+# on a future rerun with updated raw data.
+nrow(lc_panel)
+nrow(econ_panel)
 
 # ── MERGE PANELS ──────────────────────────────────────────────────────────────
-# Left join retains all 115 counties from lc_panel
-# St. Louis City will have NA for all economic variables — expected
+# Join key: GEOID and lc_panel's year matched against econ_panel's nlcd_year.
+# nlcd_year is only ever 2011, 2021, or NA, set in Script 03. It is never 2001.
+#
+# Confirmed effect on the June 2026 pull:
+#   year 2001: 115 of 115 rows missing economic data, expected, no match exists
+#   year 2011: 1 of 115 rows missing, St. Louis City, no farm operations
+#   year 2021: 1 of 115 rows missing, same reason
+# If a future rerun shows a different pattern, check Script 03's nlcd_year
+# construction and NASS withheld values first, before assuming the join broke.
 
 panel <- lc_panel |>
   left_join(econ_panel, by = c("GEOID", "year" = "nlcd_year"))
 
-# Confirm: 345 rows, 3 NAs for n_farms (St. Louis City x 3 years)
-nrow(panel)
-sum(is.na(panel$n_farms))
+nrow(panel)   # must equal nrow(lc_panel), the join must not add rows
 
-# Remove duplicate year column and validation total from lc_panel
+panel |>
+  group_by(year) |>
+  summarise(n_missing_n_farms = sum(is.na(n_farms)), n_total = n())
+
+# Check for duplicate GEOID and year combinations, a join should never
+# produce these here, but this check costs nothing and catches a bad
+# upstream file before it silently corrupts everything downstream.
+panel |>
+  count(GEOID, year) |>
+  filter(n > 1)
+
 panel <- panel |>
   select(-year.y, -total)
 
-# ── MERGE PASTURE_2011 (BEGINNING-OF-PERIOD LAND COVER) ──────────────────────
-# pasture_2011 is the same value regardless of which NLCD year row it joins to
-# (it is a single point-in-time measure used as a predictor for the
-# 2011-2021 transition outcome)
-
-panel <- panel |>
-  left_join(pasture_wide |> select(GEOID, pasture_2011), by = "GEOID")
-
-sum(is.na(panel$pasture_2011))   # should be 0 — all 115 counties have this
-
-# ── MERGE CRP ENROLLMENT (2011) ───────────────────────────────────────────────
-
-panel <- panel |>
-  left_join(crp_2011 |> select(GEOID, crp_acres_2011, crp_share_2011), 
-            by = "GEOID")
-
-sum(is.na(panel$crp_share_2011))   # should be 0 — all 115 counties have this
-
 # ── DEFINE CROPLAND TRANSITION OUTCOME ───────────────────────────────────────
-# Calculate cropland change between consecutive NLCD periods
-# Sorted by county and year before lagging
+# cropland_lag = cropland share in the previous NLCD period.
+#   year 2011 row: cropland_lag equals the 2001 cropland level
+#   year 2021 row: cropland_lag equals the 2011 cropland level
+#   year 2001 row: cropland_lag is NA, there is no earlier period
+# This is the beginning-of-period path dependence control for Part 2
+# in Script 09. Confirmed on the June 2026 pull, no missing values in
+# cropland_lag for the year 2021 rows, the set Script 09 actually uses.
 
 panel <- panel |>
   arrange(GEOID, year) |>
@@ -74,21 +74,18 @@ panel <- panel |>
   ) |>
   ungroup()
 
-# ── THRESHOLD SENSITIVITY NOTE ────────────────────────────────────────────────
-# Transition threshold = 0.02 (2 percentage points) is the baseline definition
-# Alternative thresholds tested:
-#   0.01 → 100 transitions (43.5% of non-NA observations) — may capture noise
-#   0.02 → 50 transitions (21.7%) — baseline choice
-#   0.03 → 27 transitions (11.7%) — more conservative
-#   0.05 → 2 transitions (0.9%)  — too restrictive
+# ── DEFINE TRANSITION INDICATOR ───────────────────────────────────────────────
+# Baseline threshold is 0.02. Confirmed threshold table from the June 2026
+# pull below, read as a record of what was tested, not as a fixed truth
+# to assume on future data.
 #
-# Robustness checks in Phase 4 will re-estimate the zero-inflated spatial model
-# under 0.01 and 0.03 thresholds to confirm findings are not threshold-dependent
-# If results change substantially across thresholds, report all three
+#   0.01 -> 100 of 230 valid rows, 43.5 percent
+#   0.02 ->  50 of 230 valid rows, 21.7 percent
+#   0.03 ->  27 of 230 valid rows, 11.7 percent
+#   0.05 ->   2 of 230 valid rows,  0.9 percent
 #
-# Directional finding: all 50 transitions at 0.02 threshold are cropland GAINS
-# Only 1 county shows cropland loss above 0.01 threshold
-# Missouri cropland was stable or expanding during 2001-2021
+# Rerun the loop below every time, do not copy these numbers into a
+# later script without checking them again on the current panel.
 
 panel <- panel |>
   mutate(
@@ -101,12 +98,18 @@ panel <- panel |>
     )
   )
 
+for (t in c(0.01, 0.02, 0.03, 0.05)) {
+  n_valid <- sum(!is.na(panel$cropland_change))
+  n_trans <- sum(abs(panel$cropland_change) > t, na.rm = TRUE)
+  message("Threshold ", t, ": ", n_trans, " transitions out of ",
+          n_valid, " valid rows (",
+          round(100 * n_trans / n_valid, 1), "%)")
+}
+
 # ── VALIDATE ──────────────────────────────────────────────────────────────────
 
-# Transition counts
 table(panel$transition, useNA = "ifany")
 
-# Summary by period
 panel |>
   filter(!is.na(transition)) |>
   group_by(year) |>
@@ -118,14 +121,15 @@ panel |>
     mean_change   = round(mean(cropland_change, na.rm = TRUE), 4)
   )
 
-# Zero rate justification for zero-inflated model:
-# 2001-2011: 81.7% zeros — exceeds 70% threshold for ZI modeling
-# 2011-2021: 74.8% zeros — exceeds 70% threshold for ZI modeling
+# The 2021 row set here still includes St. Louis City, 115 counties.
+# St. Louis City is dropped later, in the spatial regression scripts,
+# because it has no farm data and no meaningful land use decision to
+# model. Do not expect n_counties to equal 114 here, that drop has not
+# happened yet at this stage of the pipeline.
 
-# Confirm pasture_2011 and crp_share_2011 carried through correctly
 panel |>
   filter(year == 2021) |>
-  select(GEOID, pasture_2011, crp_share_2011) |>
+  select(GEOID, cropland, cropland_lag, cropland_change) |>
   summary()
 
 # ── EXPORT ────────────────────────────────────────────────────────────────────
