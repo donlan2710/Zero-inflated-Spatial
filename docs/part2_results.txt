@@ -1,0 +1,66 @@
+=== PART 2 TRANSITION PROBIT ===
+Sample: 90 active counties (island dropped). Estimator: ProbitSpatial SAR.
+
+M1 PRIMARY (cropland + pasture):
+-- Univariate conditional estimation of spatial probit --
+
+Sample size =  90 
+Number of covariates =  3 
+DGP =  SAR 
+estimation method =  conditional 
+Variance covariance =  Var-Covar Matrix 
+order of approx. of iW in the conditional step =  6 
+Execution time =  0.02018595 
+
+-----------------------------------------------
+
+Unconditional standard errors with likelihood-ratio test
+             Estimate   LR test       Pr(>z)
+(Intercept) -1.198422 24.750251 6.526029e-07
+cropland_z   1.677961 15.602660 7.814457e-05
+pasture_z    2.346064 44.585560 2.434809e-11
+rho          0.339195  2.325213 1.272928e-01
+
+-----------------------------------------------
+Confusion Matrix:
+       pred 1 pred 0
+true 1     24      6
+true 0      5     55
+Accuracy:	 0.8777778 
+Sensitivity:	 0.8275862 	 Specificity:	 0.9016393 
+Pos Pred Value:	 0.8 	 Neg Pred Value: 0.9166667 
+NULL
+
+M2 ROBUSTNESS (+ land value):
+-- Univariate conditional estimation of spatial probit --
+
+Sample size =  90 
+Number of covariates =  4 
+DGP =  SAR 
+estimation method =  conditional 
+Variance covariance =  Var-Covar Matrix 
+order of approx. of iW in the conditional step =  6 
+Execution time =  0.02329803 
+
+-----------------------------------------------
+
+Unconditional standard errors with likelihood-ratio test
+              Estimate   LR test       Pr(>z)
+(Intercept) -1.2731522 23.806882 1.065010e-06
+cropland_z   1.9021438 16.215416 5.653220e-05
+pasture_z    2.3471824 36.020169 1.952856e-09
+landvalue_z -0.3113787  0.667891 4.137879e-01
+rho          0.2554752  0.767606 3.809587e-01
+
+-----------------------------------------------
+Confusion Matrix:
+       pred 1 pred 0
+true 1     25      6
+true 0      4     55
+Accuracy:	 0.8888889 
+Sensitivity:	 0.862069 	 Specificity:	 0.9016393 
+Pos Pred Value:	 0.8064516 	 Neg Pred Value: 0.9322034 
+NULL
+
+Spatial parameter across specifications:
+M0 no pasture: 0.809  M1: 0.339  M1 full-lik: 0.353  M2: 0.255 
