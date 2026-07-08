@@ -1,32 +1,32 @@
 === ZERO STRUCTURE DIAGNOSTIC MEMO ===
-Date: June 2026
+Date: July 2026
+Model diagnosed: linear spatial baseline, two variables, 114 counties
 
 1. ZERO PREVALENCE
-Zero rate (2011-2021): 74.6%
-Structural zeros (Low-Low LISA): 23 counties
-Sampling zeros: 62 counties
-Transitions: 29 counties
+Sample size: 114 counties
+Zero rate: 74.6 percent
+Structural zeros: 23 
+Sampling zeros: 62 
+Transitions: 29 
 
 2. SPATIAL CLUSTERING OF ZEROS
-Moran's I on zero indicator: 0.507, p < 2.2e-16
-Zeros are not randomly distributed — concentrated in Ozark highlands
+Moran's I on zero indicator: 0.507  p = <2e-16 
 
-3. STRUCTURAL VS SAMPLING ZEROS
-Perfect separation: zero structural zero counties transitioned
-Cross-tabulation: structural=1/transition=1 cell = 0
-Confirms two distinct processes in the data
+3. STRUCTURAL VERSUS SAMPLING ZEROS
+          Transition
+Structural  0  1
+         0 62 29
+         1 23  0
+Structural zero and transition cell: 0 
 
 4. STANDARD MODEL FAILURE
-Spatial lag residuals by county type:
-Structural zero: mean = -0.114, SD = 0.080
-Sampling zero:   mean = -0.167, SD = 0.191
-Transition:      mean = +0.447, SD = 0.196
-Systematic bias confirms standard model misspecification
+      county_type  n mean_resid sd_resid
+1   Sampling zero 62    -0.1512   0.2087
+2 Structural zero 23    -0.0765   0.2065
+3      Transition 29     0.3840   0.1903
 
 5. CONCLUSION
-Standard spatial lag model addresses spatial dependence
-but cannot separate structural from sampling zeros.
-Zero-inflated spatial model required to:
-  - Model structural non-transition process separately
-  - Recover unbiased estimates of transition drivers
-  - Correctly attribute spatial dependence
+The standard spatial model addresses spatial dependence but cannot
+separate structural from sampling zeros. A two-part model is needed to
+model the structural non-transition process separately from the active
+transition process.
