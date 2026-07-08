@@ -1,0 +1,7 @@
+=== ROBUSTNESS: OUTCOME THRESHOLD SENSITIVITY ===
+  threshold n_transitions n_active active_trans rho_no_pasture rho_pasture
+1      0.02            29       90           29          0.809       0.339
+2      0.03            19       90           19          0.722       0.355
+  contrast
+1    0.470
+2    0.367

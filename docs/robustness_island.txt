@@ -1,0 +1,4 @@
+=== ROBUSTNESS: ISLAND SENSITIVITY (linear model) ===
+                 case  n linear_rho pasture_coef
+1  island in (linear) 91      0.264        0.303
+2 island out (linear) 90      0.260        0.303

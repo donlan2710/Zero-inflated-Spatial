@@ -1,0 +1,66 @@
+=== STANDARD SPATIAL BASELINE, 114 COUNTIES ===
+Variables: cropland_lag (2011 level) + pasture_2011, standardized
+Structural zeros are pooled in. This is the baseline for the two-part model.
+
+=== SPATIAL PROBIT (baseline estimator) ===
+-- Univariate conditional estimation of spatial probit --
+
+Sample size =  114 
+Number of covariates =  3 
+DGP =  SAR 
+estimation method =  conditional 
+Variance covariance =  Var-Covar Matrix 
+order of approx. of iW in the conditional step =  6 
+Execution time =  0.06226492 
+
+-----------------------------------------------
+
+Unconditional standard errors with likelihood-ratio test
+              Estimate   LR test       Pr(>z)
+(Intercept) -1.3505964 30.915967 2.694459e-08
+cropland_z   1.5867795 21.171507 4.199618e-06
+pasture_z    1.9200012 40.691565 1.782550e-10
+rho          0.5137794  9.499292 2.055511e-03
+
+-----------------------------------------------
+Confusion Matrix:
+       pred 1 pred 0
+true 1     22      5
+true 0      7     80
+Accuracy:	 0.8947368 
+Sensitivity:	 0.7586207 	 Specificity:	 0.9411765 
+Pos Pred Value:	 0.8148148 	 Neg Pred Value: 0.9195402 
+NULL
+
+=== LINEAR SPATIAL MODEL ===
+
+Call:
+lagsarlm(formula = model_formula, data = df, listw = w_114, zero.policy = TRUE)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.571412 -0.220406 -0.014925  0.175309  0.663118 
+
+Type: lag 
+Coefficients: (asymptotic standard errors) 
+            Estimate Std. Error z value  Pr(>|z|)
+(Intercept) 0.125624   0.037257  3.3718 0.0007468
+cropland_z  0.083705   0.033185  2.5224 0.0116561
+pasture_z   0.182318   0.038225  4.7696 1.846e-06
+
+Rho: 0.49904, LR test value: 22.886, p-value: 1.7188e-06
+Asymptotic standard error: 0.093914
+    z-value: 5.3138, p-value: 1.0737e-07
+Wald statistic: 28.236, p-value: 1.0737e-07
+
+Log likelihood: -28.84916 for lag model
+ML residual variance (sigma squared): 0.091567, (sigma: 0.3026)
+Number of observations: 114 
+Number of parameters estimated: 5 
+AIC: 67.698, (AIC for lm: 88.585)
+LM test for residual autocorrelation
+test value: 1.0892, p-value: 0.29664
+
+
+Linear rho: 0.499 
+Moran's I residuals: 0.031  p = 0.248 

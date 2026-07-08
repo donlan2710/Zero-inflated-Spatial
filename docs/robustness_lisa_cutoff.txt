@@ -1,0 +1,9 @@
+=== ROBUSTNESS: LISA CLASSIFICATION SENSITIVITY ===
+  cutoff n_structural separation_ok n_active rho_no_pasture rho_pasture
+1   0.10           31          TRUE       83          0.689       0.291
+2   0.05           23          TRUE       90          0.809       0.339
+3   0.01            3          TRUE      111          0.853       0.503
+  contrast
+1    0.397
+2    0.470
+3    0.349

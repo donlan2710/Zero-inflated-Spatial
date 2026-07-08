@@ -1,0 +1,61 @@
+=== ROBUSTNESS CHECKS — ZERO-INFLATED SPATIAL MODEL ===
+Date: June 2026
+Baseline: 2021 cross-section, threshold 0.02, queen contiguity, LISA p<0.05
+Baseline: Rho = 0.551, land_value_z p = 0.0002, Moran's I p = 0.293
+Economic covariates: 2012 Census of Agriculture (beginning-of-period)
+
+=== CHECK 1: SAMPLE SENSITIVITY ===
+
+Specification                                  N  Str0 Trans    Rho  LandVal LandVal_p MoranI_p  Ovlap
+---------------------------------------------------------------------------------------------------- 
+Baseline — Queen p<0.05 threshold 0.02     114    23    29  0.551  -0.2129   0.0002   0.2932      0
+Check 1 — Ste. Genevieve excluded          113    23    29  0.548  -0.2141   0.0002   0.2837      0
+
+=== CHECK 2: OUTCOME DEFINITION ===
+
+Specification                                  N  Str0 Trans    Rho  LandVal LandVal_p MoranI_p  Ovlap
+---------------------------------------------------------------------------------------------------- 
+Baseline — Queen p<0.05 threshold 0.02     114    23    29  0.551  -0.2129   0.0002   0.2932      0
+Check 2 — Threshold 0.03                   114    23    19  0.475  -0.1075   0.0496   0.5442      0
+
+=== CHECKS 3-4: SPATIAL STRUCTURE ===
+
+Note: distance weights on active subsample (n=91) geometry
+Full connectivity not achieved — Ste. Genevieve permanently isolated
+
+Specification                                  N  Str0 Trans    Rho  LandVal LandVal_p MoranI_p  Ovlap
+---------------------------------------------------------------------------------------------------- 
+Baseline — Queen p<0.05 threshold 0.02     114    23    29  0.551  -0.2129   0.0002   0.2932      0
+Check 3 — Distance 60km (active)           114    23    29  0.594  -0.2073   0.0002   0.1928      0
+Check 4 — Distance 80km (active)           114    23    29  0.556  -0.2229   0.0002   0.4354      0
+
+=== CHECKS 5-6: IDENTIFICATION ASSUMPTION — LISA THRESHOLD ===
+
+Flag: Overlap > 0 means perfect separation fails at that threshold
+
+Specification                                  N  Str0 Trans    Rho  LandVal LandVal_p MoranI_p  Ovlap
+---------------------------------------------------------------------------------------------------- 
+Baseline — Queen p<0.05 threshold 0.02     114    23    29  0.551  -0.2129   0.0002   0.2932      0
+Check 5 — LISA p<0.10                      114    31    29  0.522  -0.2138   0.0005   0.1817      0
+Check 6 — LISA p<0.01                      114     3    29  0.631  -0.1897   0.0002   0.2739      0
+
+=== CHECKS 7-9: COVARIATE SPECIFICATION (PART 2 ONLY) ===
+
+Structural zero classification fixed at baseline (LISA p < 0.05)
+
+Specification                                  N  Str0 Trans    Rho  LandVal LandVal_p MoranI_p  Ovlap
+---------------------------------------------------------------------------------------------------- 
+Baseline — Queen p<0.05 threshold 0.02     114    23    29  0.551  -0.2129   0.0002   0.2932      0
+Check 7 — Drop net_income_z                114    23    29  0.563  -0.2241   0.0001   0.2275      0
+Check 8 — Drop acres_z                     114    23    29  0.551  -0.1880   0.0001   0.2698      0
+Check 9 — Add pasture_z                    114    23    29  0.254  -0.1172   0.0422   0.2875      0
+
+=== ROBUSTNESS CRITERIA ===
+
+Findings are robust if across all specifications:
+  (1) Rho remains below standard spatial lag baseline (0.645)
+  (2) Land value coefficient sign consistently negative
+  (3) Moran's I on residuals insignificant (p > 0.05)
+  (4) Overlap = 0 (perfect separation holds)
+
+Flag any specification where Overlap > 0 or MoranI_p < 0.05
