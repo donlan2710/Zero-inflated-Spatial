@@ -1,0 +1,144 @@
+=== PART 1 PROBIT ===
+
+Call:
+glm(formula = structural_zero ~ forest_total, family = binomial(link = "probit"), 
+    data = df)
+
+Coefficients:
+             Estimate Std. Error z value Pr(>|z|)    
+(Intercept)   -2.3402     0.3618  -6.468 9.92e-11 ***
+forest_total   3.6958     0.7363   5.020 5.18e-07 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 114.644  on 113  degrees of freedom
+Residual deviance:  83.504  on 112  degrees of freedom
+AIC: 87.504
+
+Number of Fisher Scoring iterations: 6
+
+
+Marginal effect at mean forest: 0.8051 
+Classification accuracy: 0.833 
+
+=== M1 PRIMARY (cropland + pasture) ===
+-- Univariate conditional estimation of spatial probit --
+
+Sample size =  90 
+Number of covariates =  3 
+DGP =  SAR 
+estimation method =  conditional 
+Variance covariance =  Var-Covar Matrix 
+order of approx. of iW in the conditional step =  6 
+Execution time =  0.01911187 
+
+-----------------------------------------------
+
+Unconditional standard errors with likelihood-ratio test
+             Estimate   LR test       Pr(>z)
+(Intercept) -1.607656 28.313903 1.031524e-07
+cropland_z   1.706366 15.602660 7.814457e-05
+pasture_z    2.346064 44.585560 2.434809e-11
+rho          0.339195  2.325213 1.272928e-01
+
+-----------------------------------------------
+Confusion Matrix:
+       pred 1 pred 0
+true 1     24      6
+true 0      5     55
+Accuracy:	 0.8777778 
+Sensitivity:	 0.8275862 	 Specificity:	 0.9016393 
+Pos Pred Value:	 0.8 	 Neg Pred Value: 0.9166667 
+NULL
+
+=== M2 (+ land value) ===
+-- Univariate conditional estimation of spatial probit --
+
+Sample size =  90 
+Number of covariates =  4 
+DGP =  SAR 
+estimation method =  conditional 
+Variance covariance =  Var-Covar Matrix 
+order of approx. of iW in the conditional step =  6 
+Execution time =  0.02275014 
+
+-----------------------------------------------
+
+Unconditional standard errors with likelihood-ratio test
+              Estimate   LR test       Pr(>z)
+(Intercept) -1.7370618 29.002082 7.230057e-08
+cropland_z   1.9343429 16.215416 5.653220e-05
+pasture_z    2.3471824 36.020169 1.952856e-09
+landvalue_z -0.3113787  0.667891 4.137879e-01
+rho          0.2554752  0.767606 3.809587e-01
+
+-----------------------------------------------
+Confusion Matrix:
+       pred 1 pred 0
+true 1     25      6
+true 0      4     55
+Accuracy:	 0.8888889 
+Sensitivity:	 0.862069 	 Specificity:	 0.9016393 
+Pos Pred Value:	 0.8064516 	 Neg Pred Value: 0.9322034 
+NULL
+
+=== M0 (cropland only, contrast) ===
+-- Univariate conditional estimation of spatial probit --
+
+Sample size =  90 
+Number of covariates =  2 
+DGP =  SAR 
+estimation method =  conditional 
+Variance covariance =  Var-Covar Matrix 
+order of approx. of iW in the conditional step =  6 
+Execution time =  0.042068 
+
+-----------------------------------------------
+
+Unconditional standard errors with likelihood-ratio test
+               Estimate    LR test       Pr(>z)
+(Intercept) -0.16467116  1.4228344 2.329374e-01
+cropland_z  -0.02084715  0.1003352 7.514278e-01
+rho          0.80905585 25.5146769 4.390305e-07
+
+-----------------------------------------------
+Confusion Matrix:
+       pred 1 pred 0
+true 1      0      0
+true 0     29     61
+Accuracy:	 0.6777778 
+Sensitivity:	 0 	 Specificity:	 1 
+Pos Pred Value:	 NaN 	 Neg Pred Value: 0.6777778 
+NULL
+
+=== BASELINE 114 ===
+-- Univariate conditional estimation of spatial probit --
+
+Sample size =  114 
+Number of covariates =  3 
+DGP =  SAR 
+estimation method =  conditional 
+Variance covariance =  Var-Covar Matrix 
+order of approx. of iW in the conditional step =  6 
+Execution time =  0.06226492 
+
+-----------------------------------------------
+
+Unconditional standard errors with likelihood-ratio test
+              Estimate   LR test       Pr(>z)
+(Intercept) -1.3505964 30.915967 2.694459e-08
+cropland_z   1.5867795 21.171507 4.199618e-06
+pasture_z    1.9200012 40.691565 1.782550e-10
+rho          0.5137794  9.499292 2.055511e-03
+
+-----------------------------------------------
+Confusion Matrix:
+       pred 1 pred 0
+true 1     22      5
+true 0      7     80
+Accuracy:	 0.8947368 
+Sensitivity:	 0.7586207 	 Specificity:	 0.9411765 
+Pos Pred Value:	 0.8148148 	 Neg Pred Value: 0.9195402 
+NULL
